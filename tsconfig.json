@@ -19,7 +19,16 @@
       }
     ],
     "paths": {
-      "@/*": ["./*"]
+      "@/*": ["./*"],
+      "@shared/*": ["./shared/*"],
+      "@components/*": ["./components/*"],
+      "@equipment/*": ["./equipment/*"],
+      "@gymtracker/*": ["./gymtracker/*"],
+      "@hooks/*": ["./hooks/*"],
+      "@lib/*": ["./lib/*"],
+      "@notfound/*": ["./notfound/*"],
+      "@progress/*": ["./progress/*"],
+      "@workout/*": ["./workout/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
