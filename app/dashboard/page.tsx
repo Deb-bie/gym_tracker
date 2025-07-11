@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import Link from 'next/link'
 import { Equipment, WorkoutSession } from "../../shared/api";
 import { Button } from "../../components/ui/button";
 import {
@@ -16,6 +16,7 @@ import { EquipmentCard } from "../../components/EquipmentCard";
 import { WorkoutHistory } from "../../components/WorkoutHistory";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from 'next/navigation';
+import { getAllEquipmentsByUser } from "@/lib/api";
 
 export default function Dashboard() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
@@ -38,9 +39,9 @@ export default function Dashboard() {
 
   const fetchEquipment = async () => {
     try {
-      const response = await fetch("/api/equipment");
-      const data = await response.json();
-      setEquipment(data.equipment || []);
+      const token = localStorage.getItem('token');
+      const data = await getAllEquipmentsByUser(token)
+      setEquipment(data || []);
     } catch (error) {
       console.error("Error fetching equipment:", error);
     }
@@ -86,7 +87,7 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-4">
+    <div className="min-h-screen bg-[#f2f6f9]  p-4">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-8">
           <div className="flex items-center justify-between">
@@ -95,7 +96,7 @@ export default function Dashboard() {
                 Today's Workout
               </h1>
               <p className="text-slate-600 mt-2">
-                Track your progress and ccrush your goals.
+                Track your progress and crush your goals.
               </p>
             </div>
           </div>
@@ -117,9 +118,9 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
-                {/* <Link to={`/workout/${activeSession.id}`}> */}
+                <Link href={`/workout/${activeSession.id}`}>
                   <Button>Continue Workout</Button>
-                {/* </Link> */}
+                </Link>
               </div>
             </CardContent>
           </Card>
@@ -127,7 +128,7 @@ export default function Dashboard() {
 
         <div className="grid md:grid-cols-3 gap-4 mb-8">
           <Card
-            className="cursor-pointer hover:shadow-lg transition-shadow"
+            className="cursor-pointer hover:shadow-lg transition-shadow bg-white border-[#e3e8f0]"
             onClick={startNewWorkout}
           >
             <CardContent className="pt-6">
@@ -145,8 +146,8 @@ export default function Dashboard() {
             </CardContent>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-            {/* <Link to="/progress"> */}
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow bg-white border-[#e3e8f0]">
+            <Link href="/progress">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
                   <div className="p-3 bg-green-100 rounded-full">
@@ -160,11 +161,11 @@ export default function Dashboard() {
                   </div>
                 </div>
               </CardContent>
-            {/* </Link> */}
+            </Link>
           </Card>
 
-          <Card className="cursor-pointer hover:shadow-lg transition-shadow">
-            {/* <Link to="/equipment"> */}
+          <Card className="cursor-pointer hover:shadow-lg transition-shadow bg-white border-[#e3e8f0]">
+            <Link href="/equipment">
               <CardContent className="pt-6">
                 <div className="flex items-center gap-3">
                   <div className="p-3 bg-purple-100 rounded-full">
@@ -178,13 +179,13 @@ export default function Dashboard() {
                   </div>
                 </div>
               </CardContent>
-            {/* </Link> */}
+            </Link>
           </Card>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-6">
+        <div className="grid lg:grid-cols-3 gap-6 ">
           <div className="lg:col-span-2">
-            <Card>
+            <Card className="bg-white border-[#e3e8f0]">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Dumbbell className="h-5 w-5" />
@@ -197,12 +198,15 @@ export default function Dashboard() {
               <CardContent>
                 {equipment.length === 0 ? (
                   <div className="text-center py-8">
-                    <p className="text-slate-500 mb-4">
+                    <p className="text-slate-500 mb-12">
                       No equipment available
                     </p>
-                    {/* <Link to="/equipment"> */}
-                      <Button>Add Equipment</Button>
-                    {/* </Link> */}
+                    <Link href="/equipment">
+                      <Button className="bg-black text-white">
+                        <Plus className="h-4 w-4 mr-2 bg-b" />
+                          Add Equipment
+                      </Button>
+                    </Link>
                   </div>
                 ) : (
                   <div className="grid md:grid-cols-2 gap-4">
@@ -228,7 +232,7 @@ export default function Dashboard() {
           </div>
 
           <div>
-            <Card>
+            <Card className="bg-white border-[#e3e8f0]">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5" />
