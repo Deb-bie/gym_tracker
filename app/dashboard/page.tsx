@@ -16,7 +16,7 @@ import { EquipmentCard } from "../../components/EquipmentCard";
 import { WorkoutHistory } from "../../components/WorkoutHistory";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from 'next/navigation';
-import { getAllEquipmentsByUser } from "@/lib/api";
+import { addNewWorkoutSession, getAllEquipmentsByUser } from "@/lib/api";
 
 export default function Dashboard() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
@@ -26,6 +26,9 @@ export default function Dashboard() {
   );
   const { user, loading } = useAuth();
   const router = useRouter();
+
+  const token = localStorage.getItem("token");
+
 
   useEffect(() => {
     fetchEquipment();
@@ -71,16 +74,14 @@ export default function Dashboard() {
 
   const startNewWorkout = async () => {
     try {
-      const response = await fetch("/api/workouts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          date: new Date().toISOString().split("T")[0],
-          startTime: new Date().toISOString(),
-        }),
-      });
-      const data = await response.json();
-      setActiveSession(data.session);
+      const data = {
+        date: new Date().toISOString().split("T")[0],
+        startTime: new Date().toISOString(),
+      }
+      const response = await addNewWorkoutSession(token, data)
+      console.log("dashboard session response: ", response)
+      setActiveSession(response);
+
     } catch (error) {
       console.error("Error starting workout:", error);
     }
@@ -118,7 +119,7 @@ export default function Dashboard() {
                     </p>
                   </div>
                 </div>
-                <Link href={`/workout/${activeSession.id}`}>
+                <Link href={`/workout/${activeSession.id}`} className="bg-black text-white hover:bg-emerald-400 hover:text-black hover:cursor-hand rounded-md">
                   <Button>Continue Workout</Button>
                 </Link>
               </div>
