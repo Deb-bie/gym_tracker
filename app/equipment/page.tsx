@@ -140,10 +140,10 @@ export default function EquipmentPage() {
                         setFormData({ ...formData, type: value })
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white border-[#e3e8f0]">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white ">
+                      <SelectContent className="bg-white border-[#e3e8f0]">
                         <SelectItem value="strength">Strength</SelectItem>
                         <SelectItem value="cardio">Cardio</SelectItem>
                         <SelectItem value="free_weights">
