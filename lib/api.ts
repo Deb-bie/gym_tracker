@@ -121,3 +121,25 @@ export const addNewExercise = async (token: any, data: any) => {
     throw new Error(error?.response?.data.message || 'Adding exercise failed')
   }
 }
+
+
+export const endWorkoutSession = async (token: any, id: number, data: any) => {
+  try {
+    const response = await api.patch(`/api/v1/workouts/${id}`, 
+      {
+        body: data
+      }, 
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    )
+
+    if (response.status == 200) {
+      return response.data.data
+    }
+  } catch (error) {
+    throw new Error(error?.response?.data.message || 'Adding exercise failed')
+  }
+}
