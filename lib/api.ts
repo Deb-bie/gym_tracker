@@ -181,3 +181,22 @@ export const getRecentWorkouts = async (token: any) => {
   }
 }
 
+
+
+export const getActiveSessions = async (token: any) => {
+  try {
+    const response = await api.get('/api/v1/workouts/active', 
+      {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    )
+
+    if (response.status == 200) {
+      return response.data.data
+    }
+  } catch (error) {
+    throw new Error(error?.response?.data.message || 'Retriving recent workouts failed')
+  }
+}
