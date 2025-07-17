@@ -5,13 +5,14 @@ import { usePathname } from 'next/navigation'
 import { useState } from 'react'
 import { FaDumbbell } from 'react-icons/fa6'
 
+
 const Navbar = () => {
   const pathname = usePathname()
   const [isOpen, setIsOpen] = useState(false)
 
   const navigation = [
     { name: 'Dashboard', href: '/' },
-    { name: 'Workouts', href: '/workout' },
+    { name: 'Workouts', href: '/workout', active: pathname.startsWith('/workout')},
     { name: 'Equipments', href: '/equipment' },
     { name: 'Progress', href: '/progress' },
   ]
@@ -30,19 +31,24 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-8">
-            {navigation.map((item) => (
+            {navigation.map((item) =>{ 
+              const isActive =
+                item.href === '/'
+                  ? pathname === '/'
+                  : pathname.startsWith(item.href);
+              return (
               <Link
                 key={item.name}
                 href={item.href}
                 className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname === item.href
+                  isActive
                     ? 'text-blue-600 bg-blue-50'
                     : 'text-gray-700 hover:text-blue-600 hover:bg-gray-50'
                 }`}
               >
                 {item.name}
               </Link>
-            ))}
+            )})}
           </div>
 
           {/* Mobile menu button */}
