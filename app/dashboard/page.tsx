@@ -16,18 +16,16 @@ import { EquipmentCard } from "../../components/EquipmentCard";
 import { WorkoutHistory } from "../../components/WorkoutHistory";
 import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from 'next/navigation';
-import { addNewWorkoutSession, getAllEquipmentsByUser } from "@/lib/api";
+import { addNewWorkoutSession, getActiveSessions, getAllEquipmentsByUser, getRecentWorkouts } from "@/lib/api";
 
 export default function Dashboard() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [recentSessions, setRecentSessions] = useState<WorkoutSession[]>([]);
-  const [activeSession, setActiveSession] = useState<WorkoutSession | null>(
+  const [activeSession, setActiveSession] = useState<WorkoutSession| null>(
     null,
   );
   const { user, loading } = useAuth();
   const router = useRouter();
-
-  const token = localStorage.getItem("token");
 
 
   useEffect(() => {
@@ -38,7 +36,7 @@ export default function Dashboard() {
     if (!loading && !user) {
       router.push('/login');
     }
-  }, [loading, user]);
+  }, [loading, user,recentSessions]);
 
   const fetchEquipment = async () => {
     try {
@@ -52,21 +50,19 @@ export default function Dashboard() {
 
   const fetchRecentSessions = async () => {
     try {
-      const response = await fetch("/api/workouts?limit=5");
-      const data = await response.json();
-      setRecentSessions(data.sessions || []);
+      const token = localStorage.getItem('token');
+      const response = await getRecentWorkouts(token);
+      setRecentSessions(response || []);
     } catch (error) {
-      console.error("Error fetching recent sessions:", error);
+      console.error("Error fetching recent sessions: ", error);
     }
   };
 
   const checkActiveSession = async () => {
     try {
-      const response = await fetch("/api/workouts/active");
-      if (response.ok) {
-        const data = await response.json();
-        setActiveSession(data.session);
-      }
+      const token = localStorage.getItem('token');
+      const response = await getActiveSessions(token);
+      setActiveSession(response);
     } catch (error) {
       console.error("Error checking active session:", error);
     }
@@ -74,13 +70,14 @@ export default function Dashboard() {
 
   const startNewWorkout = async () => {
     try {
+      const token = localStorage.getItem('token');
       const data = {
         date: new Date().toISOString().split("T")[0],
         startTime: new Date().toISOString(),
       }
       const response = await addNewWorkoutSession(token, data)
-      console.log("dashboard session response: ", response)
       setActiveSession(response);
+      return response
 
     } catch (error) {
       console.error("Error starting workout:", error);
@@ -215,13 +212,12 @@ export default function Dashboard() {
                       <EquipmentCard
                         key={item.id}
                         equipment={item}
-                        onSelect={() => {
+                        onSelect={async () => {
                           if (activeSession) {
                             window.location.href = `/workout/${activeSession.id}?equipment=${item.id}`;
                           } else {
-                            startNewWorkout().then(() => {
-                              window.location.href = `/workout?equipment=${item.id}`;
-                            });
+                            const response = await startNewWorkout();
+                            router.push(`/workout/${response.id}?equipment=${item.id}`);
                           }
                         }}
                       />
@@ -240,7 +236,7 @@ export default function Dashboard() {
                   Recent Workouts
                 </CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="border-[#e3e8f0]">
                 <WorkoutHistory sessions={recentSessions} limit={5} />
               </CardContent>
             </Card>
