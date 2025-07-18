@@ -1,4 +1,3 @@
-import { Exercise } from "../shared/api";
 import {
   LineChart,
   Line,
@@ -10,22 +9,31 @@ import {
 } from "recharts";
 
 interface ProgressChartProps {
-  exercises: Exercise[];
+  exercises: any[];
 }
 
 export function ProgressChart({ exercises }: ProgressChartProps) {
   const chartData = exercises
-    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
-    .map((exercise, index) => ({
-      workout: index + 1,
-      weight: exercise.weight,
-      volume: exercise.weight * exercise.sets * exercise.reps,
-      date: new Date(exercise.date).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      }),
-      fullDate: exercise.date,
-    }));
+    .sort((a, b) => new Date(a.workoutSession.date).getTime() - new Date(b.workoutSession.date).getTime())
+    .map((exercise, index) => {
+      const sets = exercise.sets || []
+      const totalWeight = sets.reduce((sum: any, set: { weight: any; }) => sum + set.weight, 0)
+      const totalReps = sets.reduce((sum: any, set: { reps: any; }) => sum + set.reps, 0)
+      const totalVolume = sets.reduce((sum: number, set: { reps: number; weight: number; }) => sum + set.reps * set.weight, 0)
+
+      const averageWeight = sets.length > 0 ? totalWeight / sets.length : 0
+
+      return {
+        workout: index + 1,
+        weight: averageWeight,
+        volume: totalVolume,
+        date: new Date(exercise.workoutSession.date).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        fullDate: exercise.workoutSession.date,
+      }
+    });
 
   if (chartData.length === 0) {
     return (
