@@ -1,8 +1,8 @@
 'use client';
 
 import { useState, useEffect } from "react";
-import Link from 'next/link';
-import { Equipment } from "@/shared/api";
+import { useRouter } from 'next/navigation';
+import { Equipment, WorkoutSession } from "@/shared/api";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,10 +21,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
-import { Plus, ArrowLeft, Trash2 } from "lucide-react";
+import { Plus, Trash2 } from "lucide-react";
 import { EquipmentCard } from "@/components/EquipmentCard";
-import { addNewEquipment, getAllEquipmentsByUser, deleteUserEquipment } from "@/lib/api";
+import { addNewEquipment, getAllEquipmentsByUser, deleteUserEquipment, addNewWorkoutSession } from "@/lib/api";
 
 export default function EquipmentPage() {
   const [equipment, setEquipment] = useState<Equipment[]>([]);
@@ -35,8 +34,11 @@ export default function EquipmentPage() {
     description: "",
     targetMuscles: "",
   });
+  const [activeSession, setActiveSession] = useState<WorkoutSession | null>(
+    null,
+  );
 
-  const token = localStorage.getItem("token");
+  const router = useRouter();
 
   useEffect(() => {
     fetchEquipment();
@@ -44,6 +46,7 @@ export default function EquipmentPage() {
 
   const fetchEquipment = async () => {
     try {
+      const token = localStorage.getItem("token");
       const data = await getAllEquipmentsByUser(token)
       setEquipment(data || []);
     } catch (error) {
@@ -55,6 +58,7 @@ export default function EquipmentPage() {
     e.preventDefault();
 
     try {
+      const token = localStorage.getItem("token");
       const newEquipment = {
         ...formData,
         targetMuscles: formData.targetMuscles
@@ -79,10 +83,27 @@ export default function EquipmentPage() {
 
   const deleteEquipment = async (id: any) => {
     try {
+      const token = localStorage.getItem("token");
       await deleteUserEquipment(token, id);
       setEquipment(equipment.filter((item) => item.id !== id));
     } catch (error) {
       console.error("Error deleting equipment:", error);
+    }
+  };
+
+  const startNewWorkout = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const data = {
+        date: new Date().toISOString().split("T")[0],
+        startTime: new Date().toISOString(),
+      }
+      const response = await addNewWorkoutSession(token, data)
+      setActiveSession(response);
+      return response
+
+    } catch (error) {
+      console.error("Error starting workout:", error);
     }
   };
 
@@ -143,7 +164,7 @@ export default function EquipmentPage() {
                       <SelectTrigger className="bg-white border-[#e3e8f0]">
                         <SelectValue placeholder="Select type" />
                       </SelectTrigger>
-                      <SelectContent className="bg-white border-[#e3e8f0]">
+                      <SelectContent className="bg-white ">
                         <SelectItem value="strength">Strength</SelectItem>
                         <SelectItem value="cardio">Cardio</SelectItem>
                         <SelectItem value="free_weights">
@@ -202,8 +223,7 @@ export default function EquipmentPage() {
           </Card>
         )}
 
-        <Card className="bg-white border-[#e3e8f0]
-">
+        <Card className="bg-white border-[#e3e8f0]">
           <CardHeader>
             <CardTitle>Current Equipment ({equipment.length})</CardTitle>
             <CardDescription>
@@ -225,11 +245,14 @@ export default function EquipmentPage() {
                   <div key={item.id} className="relative group">
                     <EquipmentCard
                       equipment={item}
-                      onSelect={() => {
-                        // Navigate to workout with this equipment
-                        window.location.href = `/gym?equipment=${item.id}`;
+                      onSelect={async () => {
+                        if (activeSession) {
+                          window.location.href = `/workout/${activeSession.id}?equipment=${item.id}`;
+                        } else {
+                          const response = await startNewWorkout();
+                          router.push(`/workout/${response.id}?equipment=${item.id}`);
+                        }
                       }}
-                    
                     />
                     <Button
                       variant="destructive"
