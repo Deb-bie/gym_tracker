@@ -2,7 +2,7 @@ import { WorkoutSession } from "../shared/api";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Calendar, Clock, Dumbbell } from "lucide-react";
-import { Link } from "react-router-dom";
+import Link from 'next/link'
 
 interface WorkoutHistoryProps {
   sessions: WorkoutSession[];
@@ -38,10 +38,10 @@ export function WorkoutHistory({ sessions, limit }: WorkoutHistoryProps) {
 
   return (
     <div className="space-y-3">
-      {displaySessions.map((session) => (
+      {displaySessions.map((session, id) => (
         <div
-          key={session.id}
-          className="p-3 border rounded-lg hover:bg-slate-50 transition-colors"
+          key={id}
+          className="p-3 border rounded-lg hover:bg-slate-50 transition-colors border-[#e3e8f0]"
         >
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export function WorkoutHistory({ sessions, limit }: WorkoutHistoryProps) {
             </div>
             <div className="flex items-center gap-1">
               <Dumbbell className="h-3 w-3" />
-              <span>{session.exercises.length} exercises</span>
+              <span>{session.workoutExercises.length} exercises</span>
             </div>
           </div>
 
@@ -72,8 +72,8 @@ export function WorkoutHistory({ sessions, limit }: WorkoutHistoryProps) {
             </p>
           )}
 
-          <Link to={`/workout/${session.id}`}>
-            <Button variant="outline" size="sm" className="w-full text-xs">
+          <Link href={`/workout/${session.id}`}>
+            <Button variant="outline" size="sm" className="w-full text-xs border-[#e3e8f0]">
               View Details
             </Button>
           </Link>
@@ -82,7 +82,7 @@ export function WorkoutHistory({ sessions, limit }: WorkoutHistoryProps) {
 
       {limit && sessions.length > limit && (
         <div className="text-center pt-2">
-          <Link to="/history">
+          <Link href="/history">
             <Button variant="ghost" size="sm">
               View All ({sessions.length})
             </Button>
