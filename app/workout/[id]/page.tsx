@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams, useParams } from 'next/navigation';
-import { WorkoutSession, Equipment} from "@/shared/api";
+import { WorkoutSession, Equipment } from "@/shared/api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Clock, Dumbbell, Plus, Check} from "lucide-react";
+import { Clock, Dumbbell, Plus, Check } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { addNewExercise, endWorkoutSession, getAllEquipmentsByUser, getWorkoutSessionById } from "@/lib/api";
 import { Label } from "@/components/ui/label";
@@ -15,8 +15,6 @@ export default function WorkoutSessionPage() {
   const { id } = useParams<{ id: any }>();
   const searchParams = useSearchParams();
   const preselectedEquipmentId = searchParams.get("equipment");
-  const [token, setToken] = useState<string | null>(null);
-
   const [session, setSession] = useState<WorkoutSession | null>(null);
   const [equipment, setEquipment] = useState<Equipment[]>([]);
   const [exercises, setExercises] = useState<any[]>([]);
@@ -37,9 +35,7 @@ export default function WorkoutSessionPage() {
       fetchSession();
     }
     fetchEquipment();
-    const storedToken = localStorage.getItem('token');
-    setToken(storedToken);
-  }, [id, token, exercises]);
+  }, [id, exercises]);
 
   useEffect(() => {
     if (preselectedEquipmentId && equipment.length > 0) {
@@ -55,10 +51,7 @@ export default function WorkoutSessionPage() {
     if (saved) {
       setSets(JSON.parse(saved));
     }
-
-    if (token) {
-    }
-  }, [preselectedEquipmentId, equipment, session, token]);
+  }, [preselectedEquipmentId, equipment, session]);
 
   useEffect(() => {
     localStorage.setItem("savedSets", JSON.stringify(sets));
@@ -66,6 +59,7 @@ export default function WorkoutSessionPage() {
 
   const fetchSession = async () => {
     try {
+      const token = localStorage.getItem('token');
       const data = await getWorkoutSessionById(token, id)
 
       const workSession: WorkoutSession = {
@@ -73,7 +67,7 @@ export default function WorkoutSessionPage() {
         date: data.date,
         startTime: data.startTime,
         endTime: data.endTime,
-        exercises: data.workoutExercises,
+        workoutExercises: data.workoutExercises,
         notes: data.notes
       }
       setSession(workSession);
@@ -84,6 +78,7 @@ export default function WorkoutSessionPage() {
 
   const fetchEquipment = async () => {
     try {
+      const token = localStorage.getItem('token');
       const data = await getAllEquipmentsByUser(token)
       setEquipment(data || []);
     } catch (error) {
@@ -120,6 +115,7 @@ export default function WorkoutSessionPage() {
     setIsSubmitting(true);
 
     try {
+      const token = localStorage.getItem('token');
       const newExercise = {
         equipmentId: selectedEquipment?.id,
         workoutSessionId: Number(id),
@@ -147,6 +143,7 @@ export default function WorkoutSessionPage() {
     if (!session) return;
 
     try {
+      const token = localStorage.getItem('token');
       const data = {
         endTime: new Date().toISOString()
       }
@@ -203,7 +200,7 @@ export default function WorkoutSessionPage() {
                   </div>
                   <div className="flex items-center gap-1">
                     <Dumbbell className="h-4 w-4" />
-                    <span>{session.exercises.length || 0} exercises</span>
+                    <span>{session.workoutExercises.length || 0} exercises</span>
                   </div>
                 </div>
               </div>
@@ -361,7 +358,7 @@ export default function WorkoutSessionPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {session.exercises.length === 0 ? (
+                {session.workoutExercises.length === 0 ? (
                   <div className="text-center py-8">
                     <p className="text-slate-500 mb-4">No exercises yet</p>
                     <p className="text-sm text-slate-400">
@@ -370,10 +367,7 @@ export default function WorkoutSessionPage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {session.exercises.map((exercise, index) => {
-                      const equipmentItem = equipment.find(
-                        (eq) => eq.id === exercise.equipmentId,
-                      );
+                    {session.workoutExercises.map((exercise, index) => {
                       return (
                         <div
                           key={exercise.id}
@@ -427,37 +421,45 @@ export default function WorkoutSessionPage() {
           </div>
 
           <div>
-            {!session.endTime && (
-              <Card className="bg-white border-[#e3e8f0]">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Plus className="h-5 w-5" />
-                    Add Exercise
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <p className="text-sm text-slate-600 mb-4">
-                      Select equipment to add an exercise:
-                    </p>
-                    {equipment.map((item) => (
-                      <Button
-                        key={item.id}
-                        variant="outline"
-                        className="w-full justify-start border-[#e3e8f0]"
-                        onClick={() => {
-                          setSelectedEquipment(item);
-                          setShowExerciseForm(true);
-                        }}
-                      >
-                        {item.name}
-                      </Button>
-                    ))}
-                  </div>
+            {preselectedEquipmentId ?
+              <></>
 
-                </CardContent>
-              </Card>
-            )}
+              :
+
+              <>
+                {!session.endTime && (
+                  <Card className="bg-white border-[#e3e8f0]">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <Plus className="h-5 w-5" />
+                        Add Exercise
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        <p className="text-sm text-slate-600 mb-4">
+                          Select equipment to add an exercise:
+                        </p>
+                        {equipment.map((item) => (
+                          <Button
+                            key={item.id}
+                            variant="outline"
+                            className="w-full justify-start border-[#e3e8f0]"
+                            onClick={() => {
+                              setSelectedEquipment(item);
+                              setShowExerciseForm(true);
+                            }}
+                          >
+                            {item.name}
+                          </Button>
+                        ))}
+                      </div>
+
+                    </CardContent>
+                  </Card>
+                )}
+              </>
+            }
           </div>
         </div>
       </div>
